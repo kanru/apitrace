@@ -59,6 +59,49 @@
 /* Prevent collision with Trace::Bool */
 #undef Bool
 
+
+// OpenGL ES 1.1
+#include <GLES/glplatform.h>
+
+// types and extensions defined in GLES/gl.h
+typedef khronos_int32_t  GLfixed;
+typedef khronos_int32_t  GLclampx;
+
+#ifndef GL_OES_compressed_paletted_texture
+#define GL_PALETTE4_RGB8_OES                                    0x8B90
+#define GL_PALETTE4_RGBA8_OES                                   0x8B91
+#define GL_PALETTE4_R5_G6_B5_OES                                0x8B92
+#define GL_PALETTE4_RGBA4_OES                                   0x8B93
+#define GL_PALETTE4_RGB5_A1_OES                                 0x8B94
+#define GL_PALETTE8_RGB8_OES                                    0x8B95
+#define GL_PALETTE8_RGBA8_OES                                   0x8B96
+#define GL_PALETTE8_R5_G6_B5_OES                                0x8B97
+#define GL_PALETTE8_RGBA4_OES                                   0x8B98
+#define GL_PALETTE8_RGB5_A1_OES                                 0x8B99
+#endif
+
+/* OES_point_size_array */
+#ifndef GL_OES_point_size_array
+#define GL_POINT_SIZE_ARRAY_OES                                 0x8B9C
+#define GL_POINT_SIZE_ARRAY_TYPE_OES                            0x898A
+#define GL_POINT_SIZE_ARRAY_STRIDE_OES                          0x898B
+#define GL_POINT_SIZE_ARRAY_POINTER_OES                         0x898C
+#define GL_POINT_SIZE_ARRAY_BUFFER_BINDING_OES                  0x8B9F
+GL_API void GL_APIENTRY glPointSizePointerOES (GLenum type, GLsizei stride, const GLvoid *pointer);
+#endif
+
+#undef __glext_h_
+#include "GLES/glext.h"
+
+
+// OpenGL ES 2.0
+#include <GLES2/gl2platform.h>
+
+// avoid conflicting with GL_NV_multisample_coverage
+#define GL_NV_coverage_sample
+#include "GLES2/gl2ext.h"
+
+
 #endif /* HAVE_EGL */
 
 
