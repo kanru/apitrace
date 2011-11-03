@@ -2976,8 +2976,31 @@ parameters = [
     ("",	X,	1,	"GL_INVALID_INDEX"),	# 0xFFFFFFFFu
 ]
 
+gles_parameters = [
+    # GL_OES_compressed_paletted_texture
+    ("",	X,	1,	"0x8B90",	"GL_PALETTE4_RGB8_OES"),
+    ("",	X,	1,	"0x8B91",	"GL_PALETTE4_RGBA8_OES"),
+    ("",	X,	1,	"0x8B92",	"GL_PALETTE4_R5_G6_B5_OES"),
+    ("",	X,	1,	"0x8B93",	"GL_PALETTE4_RGBA4_OES"),
+    ("",	X,	1,	"0x8B94",	"GL_PALETTE4_RGB5_A1_OES"),
+    ("",	X,	1,	"0x8B95",	"GL_PALETTE8_RGB8_OES"),
+    ("",	X,	1,	"0x8B96",	"GL_PALETTE8_RGBA8_OES"),
+    ("",	X,	1,	"0x8B97",	"GL_PALETTE8_R5_G6_B5_OES"),
+    ("",	X,	1,	"0x8B98",	"GL_PALETTE8_RGBA4_OES"),
+    ("",	X,	1,	"0x8B99",	"GL_PALETTE8_RGB5_A1_OES"),
+
+    # GL_OES_point_size_array
+    ("_glGet",	B,	1,	"0x8B9C",	"GL_POINT_SIZE_ARRAY_OES"),
+    ("_glGet",	E,	1,	"0x898A",	"GL_POINT_SIZE_ARRAY_TYPE_OES"),
+    ("_glGet",	I,	1,	"0x898B",	"GL_POINT_SIZE_ARRAY_STRIDE_OES"),
+    ("_glGet",	P,	1,	"0x898C",	"GL_POINT_SIZE_ARRAY_POINTER_OES"),
+    ("_glGet",	I,	1,	"0x8B9F",	"GL_POINT_SIZE_ARRAY_BUFFER_BINDING_OES"),
+]
 
 # Add all enums to GLenum type descriptor
 for _function, _type, _count, _name in parameters:
     GLenum.values.append(_name)
 
+for _function, _type, _count, _value, _name in gles_parameters:
+    GLenum.values.append(_value)
+    GLenum.pretty_names[_value] = _name

@@ -283,6 +283,9 @@ class GlTracer(Tracer):
         for function, type, count, name in glparams.parameters:
             if type is glapi.GLenum:
                 print '    case %s:' % name
+        for function, type, count, value, name in glparams.gles_parameters:
+            if type is glapi.GLenum:
+                print '    case %s: // %s' % (value, name)
         print '        return true;'
         print '    default:'
         print '        return false;'
@@ -307,6 +310,9 @@ class GlTracer(Tracer):
         for function, type, count, name in glparams.parameters:
             if type is not None:
                 print '    case %s: return %u;' % (name, count)
+        for function, type, count, value, name in glparams.gles_parameters:
+            if type is not None:
+                print '    case %s: return %u; // %s' % (value, count, name)
         print '    case GL_COMPRESSED_TEXTURE_FORMATS: {'
         print '            GLint num_compressed_texture_formats = 0;'
         print '            __glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &num_compressed_texture_formats);'
