@@ -80,13 +80,19 @@ class DumpDeclarator(stdapi.OnceVisitor):
         n = len(enum.values)
         for i in range(n):
             value = enum.values[i]
-            print '    static const trace::EnumSig sig%u = {%u, "%s", %s};' % (i, DumpDeclarator.__enum_id, value, value)
+            name = value
+            if enum.pretty_names.has_key(value):
+                name = enum.pretty_names[value]
+            print '    static const trace::EnumSig sig%u = {%u, "%s", %s};' % (i, DumpDeclarator.__enum_id, name, value)
             DumpDeclarator.__enum_id += 1
         print '    const trace::EnumSig *sig;'
         print '    switch (value) {'
         for i in range(n):
             value = enum.values[i]
-            print '    case %s:' % value
+            comment = ""
+            if enum.pretty_names.has_key(value):
+                comment = " // %s" % enum.pretty_names[value]
+            print '    case %s:%s' % (value, comment)
             print '        sig = &sig%u;' % i
             print '        break;'
         print '    default:'

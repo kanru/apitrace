@@ -250,8 +250,13 @@ class StateDumper:
         print 'enumToString(GLenum pname)'
         print '{'
         print '    switch (pname) {'
-        for name in GLenum.values:
-            print '    case %s:' % name
+        n = len(GLenum.values)
+        for i in xrange(n):
+            value = GLenum.values[i]
+            name = value
+            if GLenum.pretty_names.has_key(value):
+                name = GLenum.pretty_names[value]
+            print '    case %s:' % value
             print '        return "%s";' % name
         print '    default:'
         print '        return NULL;'

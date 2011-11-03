@@ -155,6 +155,7 @@ class Enum(Type):
         Enum.__id += 1
 
         self.values = list(values)
+        self.pretty_names = {}
 
     def visit(self, visitor, *args, **kwargs):
         return visitor.visit_enum(self, *args, **kwargs)
