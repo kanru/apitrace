@@ -1,0 +1,41 @@
+Get standalone NDK
+==================
+
+$ANDROID_NDK/build/tools/make-standalone-toolchain.sh \
+                                 --platform=android-9 \
+                                 --install-dir=/tmp/ndk
+Get Android CMake
+=================
+
+hg clone https://code.google.com/p/android-cmake/
+
+Build Apitrace for Android
+==========================
+
+export ANDTOOLCHAIN=/path/to/android-cmake/toolchain/android.toolchain.cmake
+export ANDROID_NDK_TOOLCHAIN_ROOT=/path/to/standalone-ndk
+
+mkdir androidbuild
+cd androidbuild
+
+# for now we still depends on GL headers
+ln -s /usr/include/GL
+
+cmake -DCMAKE_TOOLCHAIN_FILE=$ANDTOOLCHAIN \
+      -DPYTHON_EXECUTABLE=/usr/bin/python \
+      -DENABLE_GUI=false \
+      -DENABLE_X11=false \
+      -DEGL_FOUND=true \
+      -DOPENGL_INCLUDE_PATH=$ANDROID_NDK_TOOLCHAIN_ROOT/sysroot/usr/include ..
+
+Example
+=======
+
+adb push ../libs/armeabi-v7a/egltrace.so /data/local/tmp
+adb shell
+# cd /data/local/tmp
+# LD_PRELOAD=/data/local/tmp/egltrace.so test-opengl-gl2_basic
+^C
+
+adb pull /data/local/tmp/test-opengl-gl2_basic.trace
+eglretrace test-opengl-gl2_basic.trace
