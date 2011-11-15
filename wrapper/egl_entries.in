@@ -1,0 +1,57 @@
+API_ENTRY(eglGetDisplay)
+API_ENTRY(eglInitialize)
+API_ENTRY(eglTerminate)
+API_ENTRY(eglGetConfigs)
+API_ENTRY(eglChooseConfig)
+
+API_ENTRY(eglGetConfigAttrib)
+API_ENTRY(eglCreateWindowSurface)
+API_ENTRY(eglCreatePixmapSurface)
+API_ENTRY(eglCreatePbufferSurface)
+API_ENTRY(eglDestroySurface)
+API_ENTRY(eglQuerySurface)
+API_ENTRY(eglCreateContext)
+API_ENTRY(eglDestroyContext)
+API_ENTRY(eglMakeCurrent)
+API_ENTRY(eglGetCurrentContext)
+API_ENTRY(eglGetCurrentSurface)
+API_ENTRY(eglGetCurrentDisplay)
+API_ENTRY(eglQueryContext)
+API_ENTRY(eglWaitGL)
+API_ENTRY(eglWaitNative)
+API_ENTRY(eglSwapBuffers)
+API_ENTRY(eglCopyBuffers)
+API_ENTRY(eglGetError)
+API_ENTRY(eglQueryString)
+API_ENTRY(eglGetProcAddress)
+
+/* EGL 1.1 */
+
+API_ENTRY(eglSurfaceAttrib)
+API_ENTRY(eglBindTexImage)
+API_ENTRY(eglReleaseTexImage)
+API_ENTRY(eglSwapInterval)
+
+/* EGL 1.2 */
+
+API_ENTRY(eglBindAPI)
+API_ENTRY(eglQueryAPI)
+API_ENTRY(eglWaitClient)
+API_ENTRY(eglReleaseThread)
+API_ENTRY(eglCreatePbufferFromClientBuffer)
+
+/* EGL 1.3 */
+
+/* EGL 1.4 */
+
+/* EGL_EGLEXT_VERSION 3 */
+
+API_ENTRY( eglLockSurfaceKHR)
+API_ENTRY( eglUnlockSurfaceKHR)
+API_ENTRY(eglCreateImageKHR)
+API_ENTRY( eglDestroyImageKHR)
+
+/* ANDROID extensions */
+
+API_ENTRY(eglSetSwapRectangleANDROID)
+API_ENTRY(eglGetRenderBufferANDROID)
