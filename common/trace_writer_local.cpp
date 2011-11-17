@@ -131,10 +131,6 @@ unsigned LocalWriter::beginEnter(const FunctionSig *sig) {
     os::acquireMutex();
     ++acquired;
 
-    if (!m_file->isOpened()) {
-        open(NULL);
-    }
-
     return Writer::beginEnter(sig);
 }
 

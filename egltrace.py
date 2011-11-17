@@ -68,8 +68,21 @@ class EglTracer(GlTracer):
         GlTracer.wrap_ret(self, function, instance)
 
         if function.name == "eglGetProcAddress":
-            print '    %s = __unwrap_proc_addr(procname, %s);' % (instance, instance)
+            print '    if (!strcmp("eglEnableTracingAPITRACE", procname)) {'
+            print '        %s = (__eglMustCastToProperFunctionPointerType)&eglEnableTracingAPITRACE;' % instance
+            print '    } else {'
+            print '        %s = __unwrap_proc_addr(procname, %s);' % (instance, instance)
+            print '    }'
 
+        if function.name == 'eglQueryString':
+            print '    if (name != EGL_EXTENSIONS) {'
+            print '        return %s;' % instance
+            print '    }'
+            print '    if (!apitrace_ext_string) {'
+            print '        apitrace_ext_string = (char*)malloc(strlen(%s)+strlen("EGL_APITRACE_enable_tracing")+1);' % instance
+            print '        sprintf(apitrace_ext_string, "EGL_APITRACE_enable_tracing %%s", %s);' % instance
+            print '    }'
+            print '    %s = apitrace_ext_string;' % instance
 
 if __name__ == '__main__':
     print '#include <stdlib.h>'
@@ -86,6 +99,8 @@ if __name__ == '__main__':
     print '#include "glsize.hpp"'
     print
     print 'static __eglMustCastToProperFunctionPointerType __unwrap_proc_addr(const char * procname, __eglMustCastToProperFunctionPointerType procPtr);'
+    print 'static EGLBoolean eglEnableTracingAPITRACE(EGLBoolean enable, const char *path);'
+    print 'static char* apitrace_ext_string;'
     print
 
     api = API()
@@ -111,6 +126,17 @@ if __name__ == '__main__':
     print '}'
     print
     print r'''
+
+EGLBoolean eglEnableTracingAPITRACE(EGLBoolean enable, const char *path)
+{
+    EGLBoolean ret = EGL_TRUE;
+    if (enable) {
+        ret = trace::localWriter.open(path);
+    } else {
+        trace::localWriter.close();
+    }
+    return ret;
+}
 
 /*
  * Lookup a EGL or GLES symbol
