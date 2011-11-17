@@ -130,7 +130,7 @@ namespace trace {
         LocalWriter();
         ~LocalWriter();
 
-        void open(void);
+        bool open(const char *filename);
 
         unsigned beginEnter(const FunctionSig *sig);
         void endEnter(void);

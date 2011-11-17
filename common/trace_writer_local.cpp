@@ -72,16 +72,20 @@ LocalWriter::~LocalWriter()
     os::resetExceptionCallback();
 }
 
-void
-LocalWriter::open(void) {
+bool
+LocalWriter::open(const char *filename) {
     os::String szFileName;
 
+    static unsigned dwCounter = 0;
     const char *lpFileName;
 
-    lpFileName = getenv("TRACE_FILE");
-    if (!lpFileName) {
-        static unsigned dwCounter = 0;
+    if (filename) {
+        lpFileName = filename;
+    } else {
+        lpFileName = getenv("TRACE_FILE");
+    }
 
+    if (!lpFileName) {
         os::String process = os::getProcessName();
 #ifdef _WIN32
         process.trimExtension();
@@ -91,31 +95,31 @@ LocalWriter::open(void) {
         os::String prefix = os::getCurrentDir();
         prefix.join(process);
 
-        for (;;) {
-            FILE *file;
+        lpFileName = prefix.str();
+    }
 
-            if (dwCounter)
-                szFileName = os::String::format("%s.%u.trace", prefix.str(), dwCounter);
-            else
-                szFileName = os::String::format("%s.trace", prefix.str());
+    for (;;) {
+        FILE *file;
 
+        if (dwCounter)
+            szFileName = os::String::format("%s.%u.trace", lpFileName, dwCounter);
+        else
+            szFileName = os::String::format("%s.trace", lpFileName);
+
+        file = fopen(szFileName, "rb");
+        if (file == NULL) {
             lpFileName = szFileName;
-            file = fopen(lpFileName, "rb");
-            if (file == NULL)
-                break;
-
-            fclose(file);
-
-            ++dwCounter;
+            break;
         }
+
+        fclose(file);
+
+        ++dwCounter;
     }
 
     os::log("apitrace: tracing to %s\n", lpFileName);
 
-    if (!Writer::open(lpFileName)) {
-        os::log("apitrace: error: failed to open %s\n", lpFileName);
-        os::abort();
-    }
+    return Writer::open(lpFileName);
 
 #if 0
     // For debugging the exception handler
@@ -128,7 +132,7 @@ unsigned LocalWriter::beginEnter(const FunctionSig *sig) {
     ++acquired;
 
     if (!m_file->isOpened()) {
-        open();
+        open(NULL);
     }
 
     return Writer::beginEnter(sig);
