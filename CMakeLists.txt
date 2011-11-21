@@ -19,6 +19,7 @@ set (ENABLE_GUI "AUTO" CACHE STRING "Enable Qt GUI.")
 
 set (ENABLE_EGL "AUTO" CACHE STRING "Enable EGL support.")
 
+set (ENABLE_X11 "AUTO" CACHE STRING "Enable X11.")
 
 ##############################################################################
 # Find dependencies
@@ -30,7 +31,10 @@ set (CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set (CMAKE_USE_PYTHON_VERSION 2.7 2.6)
 
 find_package (PythonInterp REQUIRED)
-find_package (OpenGL REQUIRED)
+
+if (ENABLE_X11)
+  find_package (OpenGL REQUIRED)
+endif ()
 
 if (ENABLE_GUI)
     if (NOT (ENABLE_GUI STREQUAL "AUTO"))
@@ -44,12 +48,14 @@ if (WIN32)
     find_package (DirectX)
 elseif (APPLE)
 else ()
-    find_package (X11 REQUIRED)
+    if (ENABLE_X11)
+        find_package (X11 REQUIRED)
 
-    set (X11_INCLUDE_DIR ${X11_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
-    set (X11_GL_LIB ${OPENGL_gl_LIBRARY})
+        set (X11_INCLUDE_DIR ${X11_INCLUDE_DIR} ${OPENGL_INCLUDE_DIR})
+        set (X11_GL_LIB ${OPENGL_gl_LIBRARY})
 
-    include_directories (${X11_INCLUDE_DIR})
+        include_directories (${X11_INCLUDE_DIR})
+    endif ()
 
     if (ENABLE_EGL)
         if (NOT ENABLE_EGL STREQUAL "AUTO")
@@ -415,19 +421,20 @@ elseif (APPLE)
     install (TARGETS cgltrace LIBRARY DESTINATION ${WRAPPER_INSTALL_DIR})
 else ()
     # libGL.so
-    add_custom_command (
+    if (ENABLE_X11)
+      add_custom_command (
         OUTPUT glxtrace.cpp
         COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/glxtrace.py > ${CMAKE_CURRENT_BINARY_DIR}/glxtrace.cpp
         DEPENDS glxtrace.py gltrace.py trace.py specs/glxapi.py specs/glapi.py specs/glparams.py specs/gltypes.py specs/stdapi.py
-    )
+        )
 
-    add_library (glxtrace SHARED
+      add_library (glxtrace SHARED
         ${CMAKE_CURRENT_BINARY_DIR}/glproc.hpp
         glxtrace.cpp
         glcaps.cpp
-    )
+        )
 
-    set_target_properties (glxtrace PROPERTIES
+      set_target_properties (glxtrace PROPERTIES
         # avoid the default "lib" prefix
         PREFIX ""
         # Prevent symbol relocations internal to our wrapper library to be
@@ -435,11 +442,11 @@ else ()
         LINK_FLAGS "-Wl,-Bsymbolic -Wl,-Bsymbolic-functions"
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/wrappers
         LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/wrappers
-    )
+        )
+      target_link_libraries (glxtrace dl ${X11_X11_LIB})
 
-    target_link_libraries (glxtrace dl ${X11_X11_LIB})
-
-    install (TARGETS glxtrace LIBRARY DESTINATION ${WRAPPER_INSTALL_DIR})
+      install (TARGETS glxtrace LIBRARY DESTINATION ${WRAPPER_INSTALL_DIR})
+    endif ()
 endif ()
 
 
@@ -485,18 +492,18 @@ add_custom_command (
     OUTPUT glretrace_gl.cpp
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/glretrace.py > ${CMAKE_CURRENT_BINARY_DIR}/glretrace_gl.cpp
     DEPENDS glretrace.py retrace.py specs/glapi.py specs/gltypes.py specs/stdapi.py
-)
+    )
 
 add_custom_command (
     OUTPUT glstate_params.cpp
     COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/glstate.py > ${CMAKE_CURRENT_BINARY_DIR}/glstate_params.cpp
     DEPENDS glstate.py specs/glparams.py specs/gltypes.py specs/stdapi.py
-)
+    )
 
 include_directories (
     ${CMAKE_CURRENT_BINARY_DIR}
     ${OPENGL_INCLUDE_PATH}
-)
+    )
 
 set (retrace_sources
     glretrace_gl.cpp
@@ -511,38 +518,40 @@ set (retrace_sources
     retrace_stdc.cpp
     glws.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/glproc.hpp
-)
-
-add_executable (glretrace
-    ${retrace_sources}
-    ${glws_os}
-)
-
-set_property (
-    TARGET glretrace
-    APPEND
-    PROPERTY COMPILE_DEFINITIONS "RETRACE"
-)
-
-target_link_libraries (glretrace
-    common
-)
-
-if (WIN32)
-    target_link_libraries (glretrace ${OPENGL_gl_LIBRARY})
-elseif (APPLE)
-    target_link_libraries (glretrace
-        "-framework Cocoa"
-        "-framework ApplicationServices" # CGS*
-        ${OPENGL_gl_LIBRARY} # CGL*
     )
-else ()
-    target_link_libraries (glretrace ${OPENGL_gl_LIBRARY} ${X11_X11_LIB})
+
+if (ENABLE_X11)
+    add_executable (glretrace
+        ${retrace_sources}
+        ${glws_os}
+        )
+
+    set_property (
+        TARGET glretrace
+        APPEND
+        PROPERTY COMPILE_DEFINITIONS "RETRACE"
+        )
+
+    target_link_libraries (glretrace
+        common
+        )
+
+    if (WIN32)
+        target_link_libraries (glretrace ${OPENGL_gl_LIBRARY})
+    elseif (APPLE)
+        target_link_libraries (glretrace
+            "-framework Cocoa"
+            "-framework ApplicationServices" # CGS*
+            ${OPENGL_gl_LIBRARY} # CGL*
+            )
+    else ()
+        target_link_libraries (glretrace ${OPENGL_gl_LIBRARY} ${X11_X11_LIB})
+    endif ()
+
+    install (TARGETS glretrace RUNTIME DESTINATION bin) 
 endif ()
 
-install (TARGETS glretrace RUNTIME DESTINATION bin) 
-
-if (EGL_FOUND AND NOT WIN32 AND NOT APPLE)
+if (EGL_FOUND AND NOT WIN32 AND NOT APPLE AND ENABLE_X11)
     add_executable (eglretrace
         ${retrace_sources}
         glws_egl_xlib.cpp

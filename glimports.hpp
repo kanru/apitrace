@@ -59,7 +59,9 @@
 
 #else
 
+#if defined(HAVE_X11)
 #include <X11/Xlib.h>
+#endif
 #include <GL/gl.h>
 
 #endif /* !_WIN32 */
@@ -128,8 +130,10 @@ CGLError CGLUpdateContext(CGLContextObj ctx);
 
 #else
 
+#if defined(HAVE_X11)
 #include <GL/glx.h>
 #include "glext/glxext.h"
+#endif
 
 /* Prevent collision with trace::Bool */
 #undef Bool
